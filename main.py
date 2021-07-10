@@ -1,10 +1,3 @@
-## License: Apache 2.0. See LICENSE file in root directory.
-## Copyright(c) 2015-2017 Intel Corporation. All Rights Reserved.
-
-#####################################################
-## librealsense tutorial #1 - Accessing depth data ##
-#####################################################
-
 # First import the library
 import pyrealsense2 as rs
 import numpy as np
@@ -21,8 +14,6 @@ try:
 
     # Start streaming
     pipeline.start(config)
-
-
 
     # depth_to_disparity = rs.disparity_transform(True)
     # disparity_to_depth = rs.disparity_transform(False)
