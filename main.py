@@ -2,6 +2,20 @@
 import pyrealsense2 as rs
 import numpy as np
 import cv2
+import time
+
+X_RGB = X_DEPTH = 1280
+Y_RGB = 800
+Y_DEPTH = 720
+
+X_CANVAS = X_DEPTH + X_RGB
+Y_CANVAS = max(Y_RGB, Y_DEPTH)
+
+
+canvas = np.zeros((Y_CANVAS, X_CANVAS, 3), dtype="uint8")
+
+writer = cv2.VideoWriter("video.avi", cv2.VideoWriter_fourcc(*"MJPG"), 15, (X_CANVAS, Y_CANVAS))
+
 
 try:
     # Create a context object. This object owns the handles to all connected realsense devices
@@ -9,8 +23,8 @@ try:
 
     # Configure streams
     config = rs.config()
-    config.enable_stream(rs.stream.color, 640, 480, rs.format.bgr8, 30)
-    config.enable_stream(rs.stream.depth, 640, 480, rs.format.z16, 30)
+    config.enable_stream(rs.stream.color, X_RGB, Y_RGB, rs.format.bgr8, 30)
+    config.enable_stream(rs.stream.depth, X_DEPTH, Y_DEPTH, rs.format.z16, 30)
 
     # Start streaming
     pipeline.start(config)
@@ -48,8 +62,17 @@ try:
         depth_image = cv2.applyColorMap(cv2.convertScaleAbs(depth_image, alpha=0.03), cv2.COLORMAP_JET)
 
 
-        cv2.imshow('RGB', rgb_image)
-        cv2.imshow('depth', depth_image)
+        canvas[0:Y_RGB, 0:X_RGB] = rgb_image
+        canvas[0:Y_DEPTH, X_RGB:] = depth_image
+
+
+        writer.write(canvas)
+        cv2.imshow("canvas", canvas)
+
+
+        # cv2.imshow('RGB', rgb_image)
+        # cv2.imshow('depth', depth_image)
+
 
 
         if cv2.waitKey(25) & 0xFF == ord('q'):
