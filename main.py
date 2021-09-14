@@ -8,8 +8,8 @@ X_RGB = X_DEPTH = 1280
 Y_RGB = 800
 Y_DEPTH = 720
 
-X_CANVAS = X_DEPTH + X_RGB
-Y_CANVAS = max(Y_RGB, Y_DEPTH)
+X_CANVAS = X_DEPTH
+Y_CANVAS = Y_RGB + Y_DEPTH
 
 
 canvas = np.zeros((Y_CANVAS, X_CANVAS, 3), dtype="uint8")
@@ -59,20 +59,21 @@ try:
 
         rgb_image = np.asanyarray(rgb_data)
         depth_image = np.asanyarray(depth_data)
-        depth_image = cv2.applyColorMap(cv2.convertScaleAbs(depth_image, alpha=0.03), cv2.COLORMAP_JET)
+        #depth_image = cv2.applyColorMap(cv2.convertScaleAbs(depth_image, alpha=0.03), cv2.COLORMAP_JET)
+
+        #print(depth_image.min(), depth_image.max())
+
+        canvas[0:Y_RGB, :] = rgb_image
+        canvas[Y_RGB:, :, 0] = depth_image // 256
+        canvas[Y_RGB:, :, 1] = depth_image % 256
 
 
-        canvas[0:Y_RGB, 0:X_RGB] = rgb_image
-        canvas[0:Y_DEPTH, X_RGB:] = depth_image
-
+        #cv2.imshow("depth", depth_image)
 
         writer.write(canvas)
         cv2.imshow("canvas", canvas)
-
-
         # cv2.imshow('RGB', rgb_image)
         # cv2.imshow('depth', depth_image)
-
 
 
         if cv2.waitKey(25) & 0xFF == ord('q'):
