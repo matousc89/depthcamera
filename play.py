@@ -8,16 +8,9 @@ X_RGB = X_DEPTH = 1280
 Y_RGB = 800
 Y_DEPTH = 720
 
-X_CANVAS = X_DEPTH
-Y_CANVAS = 2 * Y_RGB #+ Y_DEPTH
-
-
-canvas = np.zeros((Y_CANVAS, X_CANVAS, 3), dtype="uint8")
-
-writer = cv2.VideoWriter("video.avi", cv2.VideoWriter_fourcc(*"MJPG"), 15, (X_CANVAS, Y_CANVAS))
-
 
 try:
+    # Create a context object. This object owns the handles to all connected realsense devices
     pipeline = rs.pipeline()
 
     # Configure streams
@@ -25,6 +18,7 @@ try:
     config.enable_stream(rs.stream.color, X_RGB, Y_RGB, rs.format.bgr8, 30)
     config.enable_stream(rs.stream.depth, X_DEPTH, Y_DEPTH, rs.format.z16, 30)
 
+    # Start streaming
     pipeline.start(config)
     depth_to_disparity = rs.disparity_transform(True)
     disparity_to_depth = rs.disparity_transform(False)
@@ -37,11 +31,16 @@ try:
 
     while True:
         frames = pipeline.wait_for_frames()
+
         aligned_frames = align.process(frames)
+
         depth_frame = aligned_frames.get_depth_frame()
         color_frame = aligned_frames.get_color_frame()
 
+
+
         if not depth_frame: continue
+
 
 
         depth_frame = depth_to_disparity.process(depth_frame)
@@ -59,23 +58,13 @@ try:
         depth_image = np.asanyarray(depth_data)
         #depth_image = cv2.applyColorMap(cv2.convertScaleAbs(depth_image, alpha=0.03), cv2.COLORMAP_JET)
 
-        #print(depth_image.min(), depth_image.max())
 
-        canvas[0:Y_RGB, :] = rgb_image
-        canvas[Y_RGB:, :, 0] = depth_image // 256
-        canvas[Y_RGB:, :, 1] = depth_image % 256
-        writer.write(canvas)
+        print(rgb_image.shape, depth_image.shape)
 
-        cv2.imshow("canvas", canvas)
+        depth_image = cv2.convertScaleAbs(depth_image, alpha=0.03)
 
-
-        #cv2.imshow("depth", np.clip(depth_image, 0, 20000) * 6.5 / 2)
-        #cv2.imshow("depth", depth_image*10 )
-
-
-
-        # cv2.imshow('RGB', rgb_image)
-        # cv2.imshow('depth', depth_image)
+        cv2.imshow('RGB', rgb_image[::2, ::2])
+        cv2.imshow('depth process', depth_image[::2,::2])
 
 
         if cv2.waitKey(25) & 0xFF == ord('q'):
