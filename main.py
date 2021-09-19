@@ -66,11 +66,12 @@ try:
         canvas[0:Y_RGB, :] = rgb_image
         canvas[Y_RGB:, :, 0] = depth_image // 256
         canvas[Y_RGB:, :, 1] = depth_image % 256
-
-
-        #cv2.imshow("depth", depth_image)
-
         writer.write(canvas)
+
+        #cv2.imshow("depth", np.clip(depth_image, 0, 20000) * 6.5 / 2)
+        #cv2.imshow("depth", depth_image*10 )
+
+
         cv2.imshow("canvas", canvas)
         # cv2.imshow('RGB', rgb_image)
         # cv2.imshow('depth', depth_image)
